@@ -8,10 +8,11 @@ import { useStateValue } from './StateProvider';
 
 function App() {
 
-  const [{ user }, dispatch] = useStateValue(); 
+  const [{ user }, dispatch] = useStateValue();
   const [userSession, setUserSession] = useState(() => {
     return window.sessionStorage.getItem('user');
   })
+
 
   return (
     <div className="app">
@@ -19,17 +20,31 @@ function App() {
         <Login />
       ) : (
           <div className="app__body">
-            <Router>
-              <Sidebar />
-              <Switch>
-                <Route path="/rooms/:roomId">
-                  <Chat />
-                </Route>
-                <Route path="/">
-                  <Chat />
-                </Route>
-              </Switch>
-            </Router>
+            {window.screen.width > 600 ? (
+              <Router>
+                <Sidebar />
+                <Switch>
+                  <Route exact path="/rooms/:roomId">
+                    <Chat />
+                  </Route>
+                  <Route exact path="/">
+                    <Chat />
+                  </Route>
+                </Switch>
+              </Router>
+            ) : (
+                <Router>
+                  <Switch>
+                    <Route exact path="/rooms/:roomId">
+                      <Chat />
+                    </Route>
+                    <Route exact path="/">
+                      <Sidebar />
+                    </Route>
+                  </Switch>
+                </Router>
+              )}
+
           </div>
         )
       }

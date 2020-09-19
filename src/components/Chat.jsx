@@ -1,7 +1,7 @@
 import { Avatar, IconButton } from '@material-ui/core';
-import { AttachFile, InsertEmoticon, Mic, MoreVert, SearchOutlined } from '@material-ui/icons';
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { AttachFile, InsertEmoticon, Menu, MoreVert, SearchOutlined, Send } from '@material-ui/icons';
+import React, { useEffect, useRef, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import db from '../firebase';
 import './styles/Chat.css';
 import firebase from 'firebase';
@@ -25,6 +25,16 @@ function Chat() {
 
   const username = user?.displayName || userSession;
 
+ /* Scroll */
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current.scrollIntoView({ behavior: "auto" });
+  }
+
+  useEffect(scrollToBottom, [messages]);
+  /*End Scroll */
+
   useEffect(() => {
     if (roomId) {
       db.collection('rooms').doc(roomId)
@@ -35,6 +45,8 @@ function Chat() {
         .onSnapshot(snapshot => {
           setMessages(snapshot.docs.map(doc => doc.data()))
         })
+
+      scrollToBottom();
     }
   }, [roomId]);
 
@@ -48,11 +60,12 @@ function Chat() {
     db.collection('rooms').doc(roomId).collection('messages')
       .add({
         message: msg,
-        user: user.displayName || userSession,
+        user: username,
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
       })
     setMsg('');
   }
+
 
   return (
     <div className="chat">
@@ -62,10 +75,15 @@ function Chat() {
           <h3>{roomName}</h3>
           <p>
             {messages.length > 0 ? (moment(new Date(
-              messages[messages.length-1]?.timestamp?.toDate()
+              messages[messages.length - 1]?.timestamp?.toDate()
             )).calendar()) : 'No messages'}
           </p>
         </div>
+        <Link to="/">
+          <IconButton id="menu" >
+            <Menu />
+          </IconButton>
+        </Link>
         <div className="chat__headerRight">
           <IconButton>
             <SearchOutlined />
@@ -81,8 +99,7 @@ function Chat() {
 
       <div className="chat__body">
         {messages.map(message => (
-          <p key={message.timestamp} className={`chat__message ${
-            message.user === username && 
+          <p key={message.timestamp} className={`chat__message ${message.user === username &&
             'chat__reciever'}`}>
             <span className="chat__name">{message.user}</span>
             {message.message}
@@ -91,7 +108,7 @@ function Chat() {
             </span>
           </p>
         ))}
-
+        <div ref={messagesEndRef} />
       </div>
 
       <div className="chat__footer">
@@ -105,7 +122,9 @@ function Chat() {
           />
           <button onClick={sendMessage} type="submit">Send Message</button>
         </form>
-        <Mic />
+        <IconButton onClick={sendMessage}>
+          <Send />
+        </IconButton>
       </div>
     </div>
   )

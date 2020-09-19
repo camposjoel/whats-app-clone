@@ -31,6 +31,10 @@
   min-width: 100px;
 }
 
+#menu {
+  display: none;
+}
+
 
 .chat__message {
   position: relative;
@@ -61,7 +65,7 @@
 
 .chat__body {
   flex: 1;
-  background-image: url("https:user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png");
+  background-image: url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png");
   background-repeat: repeat;
   background-position: center;
   padding: 30px;
@@ -99,4 +103,18 @@
 .chat__footer > .MuiSvgIcon-root {
   padding: 10px;
   color: gray;
+}
+
+@media (max-width: 600px) {
+  .chat {
+    flex: 1;
+  }
+
+  #menu {
+    display: block;
+  }  
+
+  .chat__headerRight {
+    display: none;
+  }
 }
