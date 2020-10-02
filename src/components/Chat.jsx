@@ -1,4 +1,4 @@
-import { Avatar, IconButton } from '@material-ui/core';
+import { Avatar, IconButton, Menu as MenuCore, MenuItem } from '@material-ui/core';
 import { AttachFile, InsertEmoticon, Menu, MoreVert, SearchOutlined, Send } from '@material-ui/icons';
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
@@ -7,7 +7,8 @@ import './styles/Chat.css';
 import firebase from 'firebase';
 import { useStateValue } from '../StateProvider';
 import moment from 'moment';
-
+import 'emoji-mart/css/emoji-mart.css';
+import { Picker } from 'emoji-mart/dist-es/index';
 
 
 function Chat() {
@@ -22,10 +23,11 @@ function Chat() {
   const [userSession, setUserSession] = useState(() => {
     return window.sessionStorage.getItem('user');
   })
+  const [anchorEl, setAnchorEl] = useState(null);
 
   const username = user?.displayName || userSession;
 
- /* Scroll */
+  /* Scroll */
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -64,6 +66,14 @@ function Chat() {
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
       })
     setMsg('');
+  }
+
+  const handleEmoji = (event) => {
+    setAnchorEl(event.currentTarget);
+  }
+
+  const handleClose = () => {
+    setAnchorEl(null);
   }
 
 
@@ -112,7 +122,25 @@ function Chat() {
       </div>
 
       <div className="chat__footer">
-        <InsertEmoticon />
+        <IconButton aria-controls="emoji-menu" aria-haspopup="true" onClick={handleEmoji}>
+          <InsertEmoticon/>
+        </IconButton>
+        <MenuCore
+          id="emoji-menu"
+          anchorEl={anchorEl}
+          keepMounted
+          open={Boolean(anchorEl)}
+          onClose={handleClose}
+        >
+          <Picker 
+            title='Pick your emoji…' 
+            emoji='point_up'
+            onSelect={(emoji) => {
+              setMsg(msg.concat(emoji.native))
+            }}  
+          />
+        </MenuCore>
+        
         <form>
           <input
             onChange={e => setMsg(e.target.value)}
