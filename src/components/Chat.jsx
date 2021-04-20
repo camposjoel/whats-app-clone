@@ -1,20 +1,17 @@
-import { Avatar, IconButton, Menu as MenuCore, MenuItem } from '@material-ui/core';
-import { AttachFile, InsertEmoticon, Menu, MoreVert, SearchOutlined, Send } from '@material-ui/icons';
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import db from '../firebase';
-import './styles/Chat.css';
+import { Avatar, IconButton, Menu as MenuCore } from '@material-ui/core';
+import { InsertEmoticon, Menu, Send } from '@material-ui/icons';
+import { formatDistanceToNow, formatRelative } from 'date-fns';
 import firebase from 'firebase';
-import { useStateValue } from '../StateProvider';
-import moment from 'moment';
-import 'emoji-mart/css/emoji-mart.css';
 import { Picker } from 'emoji-mart/dist-es/index';
+import db from '../firebase';
+import { useStateValue } from '../StateProvider';
+import 'emoji-mart/css/emoji-mart.css';
+import './styles/Chat.css';
 
 
 function Chat() {
-
-  moment.locale('es-us');
-  const [seed, setSeed] = useState('');
   const [msg, setMsg] = useState('');
   const { roomId } = useParams();
   const [roomName, setRoomName] = useState('');
@@ -52,20 +49,19 @@ function Chat() {
     }
   }, [roomId]);
 
-  useEffect(() => {
-    setSeed(Math.floor(Math.random() * 5000));
-  }, [roomId])
 
   const sendMessage = (e) => {
     e.preventDefault();
     //console.log("You typed >>>", msg);
-    db.collection('rooms').doc(roomId).collection('messages')
+    if (msg.length > 0) {
+      db.collection('rooms').doc(roomId).collection('messages')
       .add({
         message: msg,
         user: username,
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
       })
-    setMsg('');
+      setMsg('');
+    }
   }
 
   const handleEmoji = (event) => {
@@ -80,13 +76,13 @@ function Chat() {
   return (
     <div className="chat">
       <div className="chat__header">
-        <Avatar src={`https://avatars.dicebear.com/api/male/${seed}.svg`} />
+        <Avatar src="https://cdn4.iconfinder.com/data/icons/avatars-xmas-giveaway/128/batman_hero_avatar_comics-512.png" />
         <div className="chat__headerInfo">
           <h3>{roomName}</h3>
           <p>
-            {messages.length > 0 ? (moment(new Date(
+            {messages.length > 0 ? (formatDistanceToNow(new Date(
               messages[messages.length - 1]?.timestamp?.toDate()
-            )).calendar()) : 'No messages'}
+            ), { addSuffix: true })) : 'No messages'}
           </p>
         </div>
         <Link to="/">
@@ -94,17 +90,6 @@ function Chat() {
             <Menu />
           </IconButton>
         </Link>
-        <div className="chat__headerRight">
-          <IconButton>
-            <SearchOutlined />
-          </IconButton>
-          <IconButton>
-            <AttachFile />
-          </IconButton>
-          <IconButton>
-            <MoreVert />
-          </IconButton>
-        </div>
       </div>
 
       <div className="chat__body">
@@ -114,7 +99,7 @@ function Chat() {
             <span className="chat__name">{message.user}</span>
             {message.message}
             <span className="chat__timestamp">
-              {moment(new Date(message.timestamp?.toDate())).calendar()}
+              {formatRelative(new Date(message.timestamp?.toDate()), Date.now())}
             </span>
           </p>
         ))}
@@ -133,7 +118,7 @@ function Chat() {
           onClose={handleClose}
         >
           <Picker 
-            title='Pick your emoji…' 
+            title='Pick your emoji' 
             emoji='point_up'
             onSelect={(emoji) => {
               setMsg(msg.concat(emoji.native))
