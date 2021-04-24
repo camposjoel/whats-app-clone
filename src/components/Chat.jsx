@@ -2,7 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Avatar, IconButton, Menu as MenuCore } from '@material-ui/core';
 import { InsertEmoticon, Menu, Send } from '@material-ui/icons';
-import { formatDistanceToNow, formatRelative } from 'date-fns';
+import * as dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import 'dayjs/locale/es-us';
 import firebase from 'firebase';
 import { Picker } from 'emoji-mart/dist-es/index';
 import db from '../firebase';
@@ -10,14 +12,16 @@ import { useStateValue } from '../StateProvider';
 import 'emoji-mart/css/emoji-mart.css';
 import './styles/Chat.css';
 
+dayjs.extend(relativeTime);
+dayjs.locale('es-us');
 
 function Chat() {
   const [msg, setMsg] = useState('');
   const { roomId } = useParams();
-  const [roomName, setRoomName] = useState('');
+  const [roomData, setRoomData] = useState({});
   const [messages, setMessages] = useState([]);
-  const [{ user }, dispatch] = useStateValue();
-  const [userSession, setUserSession] = useState(() => {
+  const [{ user }] = useStateValue();
+  const [userSession] = useState(() => {
     return window.sessionStorage.getItem('user');
   })
   const [anchorEl, setAnchorEl] = useState(null);
@@ -37,7 +41,12 @@ function Chat() {
   useEffect(() => {
     if (roomId) {
       db.collection('rooms').doc(roomId)
-        .onSnapshot(snapshot => setRoomName(snapshot.data().name));
+        .onSnapshot(snapshot => {
+          setRoomData({
+            name: snapshot.data().name,
+            imgUrl: snapshot.data().imgUrl
+          });
+        });
 
       db.collection('rooms').doc(roomId)
         .collection('messages').orderBy('timestamp', 'asc')
@@ -76,13 +85,13 @@ function Chat() {
   return (
     <div className="chat">
       <div className="chat__header">
-        <Avatar src="https://cdn4.iconfinder.com/data/icons/avatars-xmas-giveaway/128/batman_hero_avatar_comics-512.png" />
+        <Avatar src={roomData.imgUrl} />
         <div className="chat__headerInfo">
-          <h3>{roomName}</h3>
+          <h3>{roomData.name}</h3>
           <p>
-            {messages.length > 0 ? (formatDistanceToNow(new Date(
-              messages[messages.length - 1]?.timestamp?.toDate()
-            ), { addSuffix: true })) : 'No messages'}
+            {messages.length > 0 ?
+            dayjs(messages[messages.length - 1]?.timestamp?.toDate()).fromNow() : 
+            'Sin mensajes'}
           </p>
         </div>
         <Link to="/">
@@ -99,7 +108,7 @@ function Chat() {
             <span className="chat__name">{message.user}</span>
             {message.message}
             <span className="chat__timestamp">
-              {formatRelative(new Date(message.timestamp?.toDate()), Date.now())}
+              {dayjs(message.timestamp?.toDate()).fromNow()}
             </span>
           </p>
         ))}
@@ -118,7 +127,7 @@ function Chat() {
           onClose={handleClose}
         >
           <Picker 
-            title='Pick your emoji' 
+            title='Escoje un emoji' 
             emoji='point_up'
             onSelect={(emoji) => {
               setMsg(msg.concat(emoji.native))
@@ -130,7 +139,7 @@ function Chat() {
           <input
             onChange={e => setMsg(e.target.value)}
             value={msg}
-            placeholder="Try a message"
+            placeholder="Ingrese mensaje"
             type="text"
           />
           <button onClick={sendMessage} type="submit">Send Message</button>

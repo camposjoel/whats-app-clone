@@ -8,8 +8,8 @@ import { useStateValue } from './StateProvider';
 
 function App() {
 
-  const [{ user }, dispatch] = useStateValue();
-  const [userSession, setUserSession] = useState(() => {
+  const [{ user }] = useStateValue();
+  const [userSession] = useState(() => {
     return window.sessionStorage.getItem('user');
   })
 
@@ -49,7 +49,7 @@ function App() {
         )
       }
 
-      <p>Joel Campos 🇲🇽</p>
+      <p>Desarrollado por <a href="https://github.com/camposjoel">Joel Campos 🇲🇽</a></p>
     </div>
   );
 }

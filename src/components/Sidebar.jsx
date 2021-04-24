@@ -8,11 +8,11 @@ import { useStateValue } from '../StateProvider';
 function Sidebar() {
 
   const [rooms, setRooms] = useState([]);
-  const [{ user }, dispatch] = useStateValue();
-  const [userSession, setUserSession] = useState(() => {
+  const [{ user }, ] = useStateValue();
+  const [userSession, ] = useState(() => {
     return window.sessionStorage.getItem('user');
   });
-  const [userImg, setUserImg] = useState(() => {
+  const [userImg, ] = useState(() => {
     return window.sessionStorage.getItem('userImg');
   })
 
@@ -42,24 +42,15 @@ function Sidebar() {
         <Avatar src={userImg || user.photoURL} />
         <h2>{userSession || user.displayName}</h2>
         <div className="sidebar__headerRight">
-          <Button onClick={handleLogout}>Logout</Button>
+          <Button onClick={handleLogout}>Salir</Button>
         </div>
       </div>
 
-      {/*
       <div className="sidebar__search">
-        <div className="sidebar__searchContainer">
-          <SearchOutlined />
-          <input placeholder="Search..." type="text" />
-        </div>
-      </div>
-      */}
-      <div className="sidebar__search">
-        <h2>Chat Rooms</h2>
+        <h2>Chats</h2>
       </div>
 
       <div className="sidebar__chats">
-        {/*<SidebarChat addNewChat /> */}
         {rooms.map(room => (
           <SidebarChat key={room.id} id={room.id} name={room.data.name} imgUrl={room.data.imgUrl}/>
         ))}
